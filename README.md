@@ -1,5 +1,13 @@
 # Thesis-2018
 
+
+### Installations:
+  Python3, Tensorflow
+  NLTK - punkt
+  tqdm
+  Skimage
+  
+
 ### Reference Repositories:
   
   https://github.com/zsdonghao/text-to-image   (Simple GAN-CLS Image Synthesis)
