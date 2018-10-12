@@ -19,3 +19,6 @@
   https://github.com/tensorflow/models/tree/master/research/im2txt 
   
   https://github.com/KranthiGV/Pretrained-Show-and-Tell-model       
+
+
+Image-Captioning-master is the folder for the captioning part we are using in im2txt2im-master
