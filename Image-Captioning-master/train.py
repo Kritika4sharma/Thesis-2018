@@ -23,11 +23,11 @@ DIR = "/home/kritika/Thesis-2018/Image-Captioning-master"
 ## DIR =========================================================================
 # Directory containing preprocessed MSCOCO data.
 # MSCOCO_DIR = DIR + "/data/mscoco"
-MSCOCO_DIR = "/home/kritika/Thesis-2018/Image-Captioning-master/data/mscoco"
+MSCOCO_DIR = "/home/kritika/Thesis-Samples-Data-Models/data/mscoco"
 # Inception v3 checkpoint file.
-INCEPTION_CHECKPOINT = DIR + "/data/inception_v3.ckpt"
+INCEPTION_CHECKPOINT = "/home/kritika/Thesis-Samples-Data-Models/data/inception_v3.ckpt"
 # Directory to save the model.
-MODEL_DIR = DIR + "/model"
+MODEL_DIR = "/home/kritika/Thesis-Samples-Data-Models/model"
 
 # File pattern of sharded TFRecord input files.
 input_file_pattern = MSCOCO_DIR + "/train-?????-of-00256"
