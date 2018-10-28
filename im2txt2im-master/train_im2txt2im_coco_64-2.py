@@ -44,11 +44,11 @@ images_train_list = [images_train_dir + s for s in images_train_list]
 images_train_list = np.asarray(images_train_list)
 n_images_train = len(images_train_list)
 
-save_dir = "checkpoint-without-v1" # <-- store the GAN model
+save_dir = "checkpoint-with-v1" # <-- store the GAN model
 if not os.path.exists(save_dir):
     print("[!] Folder %s is not exist, create it." % save_dir)
     os.mkdir(save_dir)
-sample_dir = "samples-without-v1"  # <-- store generated images from seed
+sample_dir = "samples-with-v1"  # <-- store generated images from seed
 if not os.path.exists(sample_dir):
     print("[!] Folder %s is not exist, create it." % sample_dir)
     os.mkdir(sample_dir)
@@ -597,7 +597,9 @@ def main(_):
     d_loss3 = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=disc_fake_image_logits, labels=tf.zeros_like(disc_fake_image_logits)))        # <- fake image, right(arbitrary) text
 
     cls_weight = 0.5
-    d_loss = d_loss1 #+ cls_weight * d_loss2       -------------------done by kritika 
+    # without mismatched : till 59235 interations
+    #d_loss = d_loss1 #+ cls_weight * d_loss2       -------------------done by kritika 
+    d_loss = d_loss1 + cls_weight * d_loss2
     d_loss += (1-cls_weight) * d_loss3
 
     g_loss = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=disc_fake_image_logits, labels=tf.ones_like(disc_fake_image_logits))) # real == 1, fake == 0
