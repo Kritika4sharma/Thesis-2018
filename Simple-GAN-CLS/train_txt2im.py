@@ -16,40 +16,36 @@ from utils import *
 from model import *
 import model
 
-###======================== PREPARE DATA ====================================###
-print("Loading data from pickle ...")
-import pickle
-with open("_vocab.pickle", 'rb') as f:
-    vocab = pickle.load(f)
-with open("_image_train.pickle", 'rb') as f:
-    _, images_train = pickle.load(f)
-with open("_image_test.pickle", 'rb') as f:
-    _, images_test = pickle.load(f)
-with open("_n.pickle", 'rb') as f:
-    n_captions_train, n_captions_test, n_captions_per_image, n_images_train, n_images_test = pickle.load(f)
-with open("_caption.pickle", 'rb') as f:
-    captions_ids_train, captions_ids_test = pickle.load(f)
-# images_train_256 = np.array(images_train_256)
-# images_test_256 = np.array(images_test_256)
-images_train = np.array(images_train)
-images_test = np.array(images_test)
-
-
-
-# print(n_captions_train, n_captions_test)
-# exit()
-
-ni = int(np.ceil(np.sqrt(batch_size)))
-# os.system("mkdir samples")
-# os.system("mkdir samples/step1_gan-cls")
-# os.system("mkdir checkpoint")
-tl.files.exists_or_mkdir("samples/step1_gan-cls")
-tl.files.exists_or_mkdir("samples/step_pretrain_encoder")
-tl.files.exists_or_mkdir("checkpoint")
-save_dir = "checkpoint"
-
 
 def main_train():
+
+    ###======================== PREPARE DATA ====================================###
+    print("Loading data from pickle ...")
+    import pickle
+    with open("_vocab.pickle", 'rb') as f:
+        vocab = pickle.load(f)
+    with open("_image_train.pickle", 'rb') as f:
+        _, images_train = pickle.load(f)
+    with open("_image_test.pickle", 'rb') as f:
+        _, images_test = pickle.load(f)
+    with open("_n.pickle", 'rb') as f:
+        n_captions_train, n_captions_test, n_captions_per_image, n_images_train, n_images_test = pickle.load(f)
+    with open("_caption.pickle", 'rb') as f:
+        captions_ids_train, captions_ids_test = pickle.load(f)
+    # images_train_256 = np.array(images_train_256)
+    # images_test_256 = np.array(images_test_256)
+    images_train = np.array(images_train)
+    images_test = np.array(images_test)
+
+    ni = int(np.ceil(np.sqrt(batch_size)))
+    # os.system("mkdir samples")
+    # os.system("mkdir samples/step1_gan-cls")
+    # os.system("mkdir checkpoint")
+    tl.files.exists_or_mkdir("samples/step1_gan-cls")
+    tl.files.exists_or_mkdir("samples/step_pretrain_encoder")
+    tl.files.exists_or_mkdir("checkpoint")
+    save_dir = "checkpoint"
+
     ###======================== DEFIINE MODEL ===================================###
     t_real_image = tf.placeholder('float32', [batch_size, image_size, image_size, 3], name = 'real_image')
     t_wrong_image = tf.placeholder('float32', [batch_size ,image_size, image_size, 3], name = 'wrong_image')
@@ -165,6 +161,8 @@ def main_train():
     print_freq = 1
     n_batch_epoch = int(n_images_train / batch_size)
     start_epoch = 0
+    print (n_batch_epoch)
+    exit()
 
     for epoch in range(start_epoch, n_epoch+1):
         start_time = time.time()
