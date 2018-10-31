@@ -37,6 +37,9 @@ def main_train():
     images_train = np.array(images_train)
     images_test = np.array(images_test)
 
+    #print (n_images_train)
+    #exit()
+
     ni = int(np.ceil(np.sqrt(batch_size)))
     # os.system("mkdir samples")
     # os.system("mkdir samples/step1_gan-cls")
@@ -118,7 +121,7 @@ def main_train():
     # adam_vars = tl.layers.get_variables_with_name('Adam', False, True)
 
     ###============================ TRAINING ====================================###
-    gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.3)
+    gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.5)
     sess = tf.Session(config=tf.ConfigProto(allow_soft_placement=True,
         gpu_options=gpu_options))
     tl.layers.initialize_global_variables(sess)
@@ -160,9 +163,10 @@ def main_train():
     n_epoch = 600
     print_freq = 1
     n_batch_epoch = int(n_images_train / batch_size)
-    start_epoch = 0
-    print (n_batch_epoch)
-    exit()
+    start_epoch = 562
+    graph_file = open("graph.txt","a")
+    #print (n_batch_epoch)
+    #exit()
 
     for epoch in range(start_epoch, n_epoch+1):
         start_time = time.time()
@@ -220,6 +224,9 @@ def main_train():
             errG, _ = sess.run([g_loss, g_optim], feed_dict={
                             t_real_caption : b_real_caption,
                             t_z : b_z})
+
+            if(step == n_batch_epoch-1):
+                graph_file.write(str(epoch) + " " + str(errD) + " " + str(errG) + " " + str(errRNN) + "\n")
 
             print("Epoch: [%2d/%2d] [%4d/%4d] time: %4.4fs, d_loss: %.8f, g_loss: %.8f, rnn_loss: %.8f" \
                         % (epoch, n_epoch, step, n_batch_epoch, time.time() - step_time, errD, errG, errRNN))
