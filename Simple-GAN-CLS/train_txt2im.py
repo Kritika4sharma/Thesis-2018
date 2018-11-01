@@ -93,7 +93,8 @@ def main_train():
                     is_train=False, reuse=True, batch_size=batch_size)
 
     d_loss1 = tl.cost.sigmoid_cross_entropy(disc_real_image_logits, tf.ones_like(disc_real_image_logits), name='d1')
-    d_loss2 = tl.cost.sigmoid_cross_entropy(disc_mismatch_logits,  tf.zeros_like(disc_mismatch_logits), name='d2')
+    #d_loss2 = tl.cost.sigmoid_cross_entropy(disc_mismatch_logits,  tf.zeros_like(disc_mismatch_logits), name='d2')
+    d_loss2 = 0
     d_loss3 = tl.cost.sigmoid_cross_entropy(disc_fake_image_logits, tf.zeros_like(disc_fake_image_logits), name='d3')
     d_loss = d_loss1 + (d_loss2 + d_loss3) * 0.5
     g_loss = tl.cost.sigmoid_cross_entropy(disc_fake_image_logits, tf.ones_like(disc_fake_image_logits), name='g')
@@ -163,7 +164,7 @@ def main_train():
     n_epoch = 600
     print_freq = 1
     n_batch_epoch = int(n_images_train / batch_size)
-    start_epoch = 562
+    start_epoch = 391
     graph_file = open("graph.txt","a")
     #print (n_batch_epoch)
     #exit()
