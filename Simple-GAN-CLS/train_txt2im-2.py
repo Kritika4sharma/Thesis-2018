@@ -16,10 +16,11 @@ from utils import *
 from model import *
 import model
 
-model_dir = "experiment2/"
+model_dir = "experiment/"
 
-# to use just none gpu
-os.environ["CUDA_VISIBLE_DEVICES"] = "1"
+# to use just one gpu
+os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
 
 def main_train():
@@ -105,9 +106,7 @@ def main_train():
     g_loss = tl.cost.sigmoid_cross_entropy(disc_fake_image_logits, tf.ones_like(disc_fake_image_logits), name='g')
 
     ####======================== DEFINE TRAIN OPTS ==============================###
-    lr_g = 0.0004
-    lr_d = 0.0001
-    lr_rnn = 0.002
+    lr = 0.001
     lr_decay = 0.5      # decay factor for adam, https://github.com/reedscot/icml2016/blob/master/main_cls_int.lua  https://github.com/reedscot/icml2016/blob/master/scripts/train_flowers.sh
     decay_every = 100   # https://github.com/reedscot/icml2016/blob/master/main_cls.lua
     beta1 = 0.5
@@ -117,24 +116,20 @@ def main_train():
     d_vars = tl.layers.get_variables_with_name('discriminator', True, True)
     g_vars = tl.layers.get_variables_with_name('generator', True, True)
 
-    with tf.variable_scope('generator_learning_rate'):
-        lr_v_g = tf.Variable(lr_g, trainable=False)
-    with tf.variable_scope('discriminator_learning_rate'):
-        lr_v_d = tf.Variable(lr_d, trainable=False)
-    with tf.variable_scope('rnn_learning_rate'):
-        lr_v_rnn = tf.Variable(lr_rnn, trainable=False)
-    d_optim = tf.train.AdamOptimizer(lr_v_d, beta1=beta1).minimize(d_loss, var_list=d_vars )
-    g_optim = tf.train.AdamOptimizer(lr_v_g, beta1=beta1).minimize(g_loss, var_list=g_vars )
+    with tf.variable_scope('learning_rate'):
+        lr_v = tf.Variable(lr, trainable=False)
+    d_optim = tf.train.AdamOptimizer(lr_v, beta1=beta1).minimize(d_loss, var_list=d_vars )
+    g_optim = tf.train.AdamOptimizer(lr_v, beta1=beta1).minimize(g_loss, var_list=g_vars )
     # e_optim = tf.train.AdamOptimizer(lr_v, beta1=beta1).minimize(e_loss, var_list=e_vars + c_vars)
     grads, _ = tf.clip_by_global_norm(tf.gradients(rnn_loss, rnn_vars + cnn_vars), 10)
-    optimizer = tf.train.AdamOptimizer(lr_v_rnn, beta1=beta1)# optimizer = tf.train.GradientDescentOptimizer(lre)
+    optimizer = tf.train.AdamOptimizer(lr_v, beta1=beta1)# optimizer = tf.train.GradientDescentOptimizer(lre)
     rnn_optim = optimizer.apply_gradients(zip(grads, rnn_vars + cnn_vars))
 
     # adam_vars = tl.layers.get_variables_with_name('Adam', False, True)
 
     ###============================ TRAINING ====================================###
-    gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.3)
-    #gpu_options.visible_device_list = '1'
+    gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.5)
+    gpu_options.visible_device_list = '1'
     sess = tf.Session(config=tf.ConfigProto(allow_soft_placement=True,
         gpu_options=gpu_options))
     tl.layers.initialize_global_variables(sess)
@@ -186,14 +181,12 @@ def main_train():
 
         if epoch !=0 and (epoch % decay_every == 0):
             new_lr_decay = lr_decay ** (epoch // decay_every)
-            sess.run(tf.assign(lr_v_g, lr_g * new_lr_decay))
-            sess.run(tf.assign(lr_v_d, lr_d * new_lr_decay))
-            sess.run(tf.assign(lr_v_rnn, lr_rnn * new_lr_decay))
-            log = " ** new learning rate: %f" % (lr_rnn * new_lr_decay)
+            sess.run(tf.assign(lr_v, lr * new_lr_decay))
+            log = " ** new learning rate: %f" % (lr * new_lr_decay)
             print(log)
             # logging.debug(log)
         elif epoch == 0:
-            log = " ** init lr: %f  decay_every_epoch: %d, lr_decay: %f" % (lr_rnn, decay_every, lr_decay)
+            log = " ** init lr: %f  decay_every_epoch: %d, lr_decay: %f" % (lr, decay_every, lr_decay)
             print(log)
 
         for step in range(n_batch_epoch):
@@ -230,7 +223,7 @@ def main_train():
             
         
             ## updates D
-            if(step%2==0):
+            if(step%4==0):
                 errD, _ = sess.run([d_loss, d_optim], feed_dict={
                                 t_real_image : b_real_images,
                                 # t_wrong_image : b_wrong_images,
