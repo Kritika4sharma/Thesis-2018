@@ -6,5 +6,5 @@
 ```
 
 ```
-2. 
+2. Addition of noise to the discriminator input
 ```
