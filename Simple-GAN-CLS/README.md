@@ -17,3 +17,7 @@
 4. Analysing the gradients 
 ```
 
+```
+5. Inserting the Dropout Layers 
+```
+
