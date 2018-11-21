@@ -8,3 +8,12 @@
 ```
 2. Addition of noise to the discriminator input
 ```
+
+```
+3. Flip the Labels
+```
+
+```
+4. Analysing the gradients 
+```
+
