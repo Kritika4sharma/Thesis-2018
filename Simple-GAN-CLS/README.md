@@ -21,3 +21,7 @@
 5. Inserting the Dropout Layers 
 ```
 
+```
+6. Re-insertion of encoded text vector
+```
+
