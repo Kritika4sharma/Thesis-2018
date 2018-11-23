@@ -54,15 +54,16 @@ if dataset == '102flowers':
     ## store all captions ids in list
     captions_ids = []
     try: # python3
-        tmp = captions_dict.items()
+        tmp = sorted(captions_dict.items())
     except: # python3
-        tmp = captions_dict.iteritems()
+        tmp = sorted(captions_dict.iterkeys())
     for key, value in tmp:
         for v in value:
             captions_ids.append( [vocab.word_to_id(word) for word in nltk.tokenize.word_tokenize(v)] + [vocab.end_id])  # add END_ID
             # print(v)              # prominent purple stigma,petals are white inc olor
             # print(captions_ids)   # [[152, 19, 33, 15, 3, 8, 14, 719, 723]]
             # exit()
+
     captions_ids = np.asarray(captions_ids)
     print(" * tokenized %d captions" % len(captions_ids))
 
@@ -89,8 +90,8 @@ if dataset == '102flowers':
     # images = tl.prepro.threading_data(imgs_title_list, fn=get_resize_image)
     images = []
     images_256 = []
+    ind = 0
     for name in imgs_title_list:
-        print(name)
         img_raw = scipy.misc.imread( os.path.join(img_dir, name) )
         img = tl.prepro.imresize(img_raw, size=[64, 64])    # (64, 64, 3)
         img = img.astype(np.float32)
