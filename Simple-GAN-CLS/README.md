@@ -1,3 +1,8 @@
+## How to Run ##
+```
+1. Run data_loader.py to first load the data from the folders
+2. Run train_txt2im.py to train the model
+```
 
 ## Experiments ##
 
