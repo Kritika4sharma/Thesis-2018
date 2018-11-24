@@ -34,3 +34,6 @@
 7. Training the discriminator beforehand
 ```
 
+```
+8. Distributed GANs
+```
