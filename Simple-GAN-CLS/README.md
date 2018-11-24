@@ -30,3 +30,7 @@
 6. Re-insertion of encoded text vector
 ```
 
+```
+7. Training the discriminator beforehand
+```
+
