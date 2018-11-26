@@ -4,6 +4,12 @@
 2. Run train_txt2im.py to train the model
 ```
 
+## Installations ##
+1. Tensorflow
+2. ```
+   >>> import nltk
+   >>> nltk.download('punkt')
+   ```
 ## Experiments ##
 
 ```
