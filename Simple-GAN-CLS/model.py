@@ -1,6 +1,8 @@
 #! /usr/bin/python
 # -*- coding: utf8 -*-
 
+
+
 import tensorflow as tf
 import tensorlayer as tl
 from tensorlayer.layers import *
@@ -980,6 +982,8 @@ def generator_txt2img_resnet(input_z, t_txt=None, is_train=True, reuse=False, ba
     s2, s4, s8, s16 = int(s/2), int(s/4), int(s/8), int(s/16)
     gf_dim = 128
 
+    print ("Gen started=================================")
+
     w_init = tf.random_normal_initializer(stddev=0.02)
     gamma_init = tf.random_normal_initializer(1., 0.02)
 
@@ -995,24 +999,33 @@ def generator_txt2img_resnet(input_z, t_txt=None, is_train=True, reuse=False, ba
 
         net_h0 = DenseLayer(net_in, gf_dim*8*s16*s16, act=tf.identity,
                 W_init=w_init, b_init=None, name='g_h0/dense')
+        net_h0 = DropoutLayer(net_h0, keep=0.5, is_fix=True, name='drop1')
         net_h0 = BatchNormLayer(net_h0,  #act=tf.nn.relu,
                 is_train=is_train, gamma_init=gamma_init, name='g_h0/batch_norm')
         net_h0 = ReshapeLayer(net_h0, [-1, s16, s16, gf_dim*8], name='g_h0/reshape')
 
         net = Conv2d(net_h0, gf_dim*2, (1, 1), (1, 1),
                 padding='VALID', act=None, W_init=w_init, b_init=None, name='g_h1_res/conv2d')
+        print (net.outputs.shape)
+        #net = DropoutLayer(net, keep=0.5, is_fix=True, name='drop2')
         net = BatchNormLayer(net, act=tf.nn.relu, is_train=is_train,
                 gamma_init=gamma_init, name='g_h1_res/batch_norm')
         net = Conv2d(net, gf_dim*2, (3, 3), (1, 1),
                 padding='SAME', act=None, W_init=w_init, b_init=None, name='g_h1_res/conv2d2')
+        print (net.outputs.shape)
+        #net = DropoutLayer(net, keep=0.5, is_fix=True, name='drop3')
         net = BatchNormLayer(net, act=tf.nn.relu, is_train=is_train,
                 gamma_init=gamma_init, name='g_h1_res/batch_norm2')
         net = Conv2d(net, gf_dim*8, (3, 3), (1, 1),
                 padding='SAME', act=None, W_init=w_init, b_init=None, name='g_h1_res/conv2d3')
+        print (net.outputs.shape)
+        #net = DropoutLayer(net, keep=0.5, is_fix=True, name='drop4')
         net = BatchNormLayer(net, # act=tf.nn.relu,
                 is_train=is_train, gamma_init=gamma_init, name='g_h1_res/batch_norm3')
         net_h1 = ElementwiseLayer(layer=[net_h0, net], combine_fn=tf.add, name='g_h1_res/add')
-        net_h1.outputs = tf.nn.relu(net_h1.outputs)
+        print (net_h1.outputs.shape)
+        net_h1.outputs = tf.nn.leaky_relu(net_h1.outputs, alpha=0.2, name='leaky_relu_1')
+
 
         # Note: you can also use DeConv2d to replace UpSampling2dLayer and Conv2d
         # net_h2 = DeConv2d(net_h1, gf_dim*4, (4, 4), out_size=(s8, s8), strides=(2, 2),
@@ -1021,30 +1034,53 @@ def generator_txt2img_resnet(input_z, t_txt=None, is_train=True, reuse=False, ba
                 align_corners=False, name='g_h2/upsample2d')
         net_h2 = Conv2d(net_h2, gf_dim*4, (3, 3), (1, 1),
                 padding='SAME', act=None, W_init=w_init, b_init=None, name='g_h2/conv2d')
+        print (net_h2.outputs.shape)
+        #net_h2 = DropoutLayer(net_h2, keep=0.5, is_fix=True, name='drop5')
         net_h2 = BatchNormLayer(net_h2,# act=tf.nn.relu,
                 is_train=is_train, gamma_init=gamma_init, name='g_h2/batch_norm')
+    
+        # Adding one layer inserting the text again!!!! 
+        if t_txt is not None:
+            net_txt = InputLayer(t_txt, name='g_input_txt_2')
+            net_txt = DenseLayer(net_txt, n_units=t_dim,
+                act=lambda x: tl.act.lrelu(x, 0.2), W_init=w_init, name='g_reduce_text/dense2')
+            net_txt = ExpandDimsLayer(net_txt, 1, name='d_txt/expanddim1')
+            print (net_txt.outputs.shape)
+            net_txt = ExpandDimsLayer(net_txt, 1, name='d_txt/expanddim2')
+            print (net_txt.outputs.shape)
+            net_txt = TileLayer(net_txt, [1, 8, 8, 1], name='d_txt/tile')
+            net_h2 = ConcatLayer([net_h2, net_txt], concat_dim=3, name='g_concat_z_txt2')
+        
 
         net = Conv2d(net_h2, gf_dim, (1, 1), (1, 1),
                 padding='VALID', act=None, W_init=w_init, b_init=None, name='g_h3_res/conv2d')
+        print (net.outputs.shape)
+        #net = DropoutLayer(net, keep=0.5, is_fix=True, name='drop6')
         net = BatchNormLayer(net, act=tf.nn.relu, is_train=is_train,
                 gamma_init=gamma_init, name='g_h3_res/batch_norm')
         net = Conv2d(net, gf_dim, (3, 3), (1, 1),
                 padding='SAME', act=None, W_init=w_init, b_init=None, name='g_h3_res/conv2d2')
+        print (net.outputs.shape)
+        #net = DropoutLayer(net, keep=0.5, is_fix=True, name='drop7')
         net = BatchNormLayer(net, act=tf.nn.relu, is_train=is_train,
                 gamma_init=gamma_init, name='g_h3_res/batch_norm2')
         net = Conv2d(net, gf_dim*4, (3, 3), (1, 1),
                 padding='SAME', act=None, W_init=w_init, b_init=None, name='g_h3_res/conv2d3')
-        net = BatchNormLayer(net, #act=tf.nn.relu,
+        print (net.outputs.shape)
+        #net = DropoutLayer(net, keep=0.5, is_fix=True, name='drop8')
+        net_h3 = BatchNormLayer(net, #act=tf.nn.relu,
                 is_train=is_train, gamma_init=gamma_init, name='g_h3_res/batch_norm3')
-        net_h3 = ElementwiseLayer(layer=[net_h2, net], combine_fn=tf.add, name='g_h3/add')
-        net_h3.outputs = tf.nn.relu(net_h3.outputs)
+        #net_h3 = ElementwiseLayer(layer=[net_h2, net], combine_fn=tf.add, name='g_h3/add')
+        #net_h3.outputs = tf.nn.leaky_relu(net_h3.outputs, alpha=0.2)
 
         # net_h4 = DeConv2d(net_h3, gf_dim*2, (4, 4), out_size=(s4, s4), strides=(2, 2),
         #         padding='SAME', batch_size=batch_size, act=None, W_init=w_init, b_init=b_init, name='g_h4/decon2d'),
         net_h4 = UpSampling2dLayer(net_h3, size=[s4, s4], is_scale=False, method=1,
                 align_corners=False, name='g_h4/upsample2d')
+        print (net_h4.outputs.shape)
         net_h4 = Conv2d(net_h4, gf_dim*2, (3, 3), (1, 1),
                 padding='SAME', act=None, W_init=w_init, b_init=None, name='g_h4/conv2d')
+        #net_h4 = DropoutLayer(net_h4, keep=0.5, is_fix=True, name='drop9')
         net_h4 = BatchNormLayer(net_h4, act=tf.nn.relu,
                 is_train=is_train, gamma_init=gamma_init, name='g_h4/batch_norm')
 
@@ -1052,8 +1088,11 @@ def generator_txt2img_resnet(input_z, t_txt=None, is_train=True, reuse=False, ba
         #         padding='SAME', batch_size=batch_size, act=None, W_init=w_init, b_init=b_init, name='g_h5/decon2d')
         net_h5 = UpSampling2dLayer(net_h4, size=[s2, s2], is_scale=False, method=1,
                 align_corners=False, name='g_h5/upsample2d')
+        print (net_h5.outputs.shape)
         net_h5 = Conv2d(net_h5, gf_dim, (3, 3), (1, 1),
                 padding='SAME', act=None, W_init=w_init, b_init=None, name='g_h5/conv2d')
+        print (net_h5.outputs.shape)
+        #net_h5 = DropoutLayer(net_h5, keep=0.5, is_fix=True, name='drop10')
         net_h5 = BatchNormLayer(net_h5, act=tf.nn.relu,
                 is_train=is_train, gamma_init=gamma_init, name='g_h5/batch_norm')
 
@@ -1061,10 +1100,16 @@ def generator_txt2img_resnet(input_z, t_txt=None, is_train=True, reuse=False, ba
         #         padding='SAME', batch_size=batch_size, act=None, W_init=w_init, name='g_ho/decon2d')
         net_ho = UpSampling2dLayer(net_h5, size=[s, s], is_scale=False, method=1,
                 align_corners=False, name='g_ho/upsample2d')
+        print (net_ho.outputs.shape)
         net_ho = Conv2d(net_ho, c_dim, (3, 3), (1, 1),
                 padding='SAME', act=None, W_init=w_init, name='g_ho/conv2d')
+        print (net_ho.outputs.shape)
+        #net_ho = DropoutLayer(net_ho, keep=0.5, is_fix=True, name='drop11')
         logits = net_ho.outputs
         net_ho.outputs = tf.nn.tanh(net_ho.outputs)
+
+        exit()
+
     return net_ho, logits
 
 def discriminator_txt2img_resnet(input_images, t_txt=None, is_train=True, reuse=False):
