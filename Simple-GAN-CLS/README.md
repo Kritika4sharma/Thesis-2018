@@ -45,5 +45,5 @@
 ```
 
 ```
-9. 
+9. Ensemble models for Generators/Discriminators
 ```
