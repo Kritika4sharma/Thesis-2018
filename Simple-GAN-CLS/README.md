@@ -37,7 +37,7 @@
 ```
 
 ```
-7. Training the discriminator beforehand
+7. Try different method of text encoding in NLP
 ```
 
 ```
@@ -46,4 +46,12 @@
 
 ```
 9. Ensemble models for Generators/Discriminators
+```
+
+```
+10.
+```
+
+```
+11. Get more data
 ```
